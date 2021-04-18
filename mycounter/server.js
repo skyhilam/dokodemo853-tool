@@ -26,8 +26,6 @@ app.post('/', (req, resp) => {
 })
 
 io.on('connection', (socket) => {
-  console.log('someone join');
-  console.log(formdata);
   socket.emit('update', formdata)
 })
 
