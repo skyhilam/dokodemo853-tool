@@ -1,0 +1,17 @@
+# dependencies
+node_modules
+
+# logs
+npm-debug.log
+
+
+package-lock.json
+
+# Nuxt generate
+dist
+
+
+
+.yarn.lock
+
+.env

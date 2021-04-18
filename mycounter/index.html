@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link href="https://unpkg.com/tailwindcss@^2/dist/tailwind.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/@splidejs/splide@latest/dist/css/splide.min.css">
+  <title>mycounter</title>
+</head>
+
+<body>
+
+  <div id="app">
+    <div class="bg-white h-screen flex flex-col">
+      <div class="flex-1">
+        <div class="flex px-5 py-3 border-b border-black">
+          <div class="flex-1">Description</div>
+          <div>Amount(MOP)</div>
+        </div>
+        <div v-for="record in records" :key="record.id" class="flex px-5 py-3 border-b border-black">
+          <div class="flex-1">
+            <div>{{ record.barcode }}</div>
+            <div>
+              {{ record.name }} x{{ record.quantity }} =
+              {{ $filters.number_format(record.amount) }}
+            </div>
+          </div>
+          <div class="text-right">
+            <div v-if="record.discount">VIP優惠：- {{ $filters.number_format(record.discount) }}</div>
+            <div>合計：{{ $filters.number_format(record.total) }}</div>
+          </div>
+        </div>
+        <div class="px-5 py-3 flex">
+          <div class="flex-1">
+            <div v-if="customer.no">
+              <p class="flex items-center mb-1">VIP會員資料：</p>
+              <p class="mb-1">會號：{{ customer.no }}</p>
+              <p class="mb-1">名稱：{{ customer.name }}</p>
+              <p class="mb-1">聯絡電話：{{ customer.tel }}</p>
+              <p class="mb-1">績分：{{ customer.vip_points }}</p>
+            </div>
+          </div>
+          <div>
+            <p class="text-right margin-bottom-0">
+              總量
+              <span style="min-width: 100px; display: inline-block">{{
+                payment.quantity
+                }}</span>
+            </p>
+            <p class="text-right margin-bottom-0">
+              總小計
+              <span style="min-width: 100px; display: inline-block">{{
+                $filters.number_format(payment.subtotal)
+                }}</span>
+            </p>
+            <p class="text-right margin-bottom-0" v-if="payment.discount">
+              總優惠
+              <span style="min-width: 100px; display: inline-block">{{
+                $filters.number_format(payment.discount * -1)
+                }}</span>
+            </p>
+            <p class="text-right">
+              合共
+              <span style="min-width: 100px; display: inline-block">{{
+                $filters.number_format(payment.total)
+                }}</span>
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div class="bg-gray-500">
+        <div class="splide h-full">
+          <div class="splide__track">
+            <ul class="splide__list">
+              <li class="splide__slide bg-desert-storm" v-for="img in imgs" :key="img">
+                <img class="w-full h-full object-cover md:object-contain" :src="img" />
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+
+
+  </div>
+  </div>
+
+  <script src="https://unpkg.com/vue@next"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@splidejs/splide@latest/dist/js/splide.min.js"></script>
+  <script src="//cdnjs.cloudflare.com/ajax/libs/numeral.js/2.0.6/numeral.min.js"></script>
+  <script>
+    var socket = io();
+
+    const Mycounter = {
+      data() {
+        return {
+          records: [],
+          customer: {},
+          payment: {},
+          imgs: [
+            'https://images.iclover.net/game853/fRJmhLZmvYoHkzo8lrhYudCeQJ88OVtczQN8AYhw2o1Z1s43WM7gOQ2MgNNfLgDm.png',
+            'https://images.iclover.net/game853/szHTJpppzUltRUUHcuKuMgnNT8N5v3wQTpPekWoVwxnAmqj3Mmj0FJMB6J0hUGYE.jpeg',
+          ]
+        }
+      },
+      mounted() {
+        socket.on('update', function (data) {
+          console.log(data);
+          this.records = data.items
+          this.customer = data.customer
+          this.payment = data.payment
+        }.bind(this));
+
+        new Splide(".splide", {
+          pagination: false,
+          autoplay: true,
+          arrows: false,
+          interval: 5000,
+          type: "loop",
+          height: "320px",
+        }).mount();
+      },
+
+    }
+
+    const app = Vue.createApp(Mycounter)
+    app.config.globalProperties.$filters = {
+      number_format(value, fixed) {
+        return numeral(value).format(fixed ? fixed : '"0,0.0"')
+        if (value) {
+          const val = (value / 1).toFixed(isNumber(fixed) ? fixed : 1).replace('.', '.')
+          return val.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+        }
+        return 0
+      }
+    }
+    app.mount('#app')
+  </script>
+</body>
+
+</html>
