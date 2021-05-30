@@ -10,6 +10,7 @@ const http = require('http').Server(app);
 const cors = require('cors');
 const bodyParser = require('body-parser')
 const io = require('socket.io')(http);
+const printer = require('pdf-to-printer');
 
 const fs = require('fs');
 const puppeteer = require('puppeteer')
@@ -41,11 +42,11 @@ app.post('/receipt', async (req, resp) => {
 
 
   const page = await browser.newPage()
-  
+
   await page.setViewport({ width: 296, height: 296 })
 
   const html = fs.readFileSync(__dirname + '/html/receipt.html', 'utf-8').replace('#jsondata', json_data);
-  
+
   // await page.goto(
   //   `data:text/html,${html}`,
   // );
@@ -68,12 +69,16 @@ app.post('/receipt', async (req, resp) => {
     pageRanges: '1',
     width: '80mm',
     height: `${heightmm}mm`,
-    margin: 0,
     path: `${__dirname}/pdf/receipt.pdf`
   })
 
   // close the browser
   await browser.close();
+
+
+  printer.print(`${__dirname}/pdf/receipt.pdf`)
+    .then(console.log)
+    .catch(console.error);
 
   resp.sendStatus(200);
 
