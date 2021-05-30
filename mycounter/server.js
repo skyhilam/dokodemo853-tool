@@ -1,7 +1,9 @@
-const app = require('express')();
+const express = require('express');
 
+const app = express();
 app.engine('html', require('ejs').renderFile);
 app.set('view engine', 'html');
+app.use(express.static('public'))
 
 
 const http = require('http').Server(app);
@@ -10,7 +12,7 @@ const bodyParser = require('body-parser')
 const io = require('socket.io')(http);
 
 const fs = require('fs');
-const htmltopdf = require('html-pdf');
+const puppeteer = require('puppeteer')
 
 
 var formdata = {
@@ -29,21 +31,55 @@ app.get('/', (req, resp) => {
   resp.sendFile(__dirname + '/html/index.html');
 });
 
-app.post('/receipt', (req, resp) => {
+app.post('/receipt', async (req, resp) => {
   const data = req.body;
-  const html = fs.readFileSync(__dirname + '/html/receipt.html', 'utf-8');
-  htmltopdf.create(html, {
-    format: 'A4',
-    "quality": "100",   
-    "phantomPath": "./node_modules/phantomjs/bin/phantomjs",
-  }).toFile('./pdf/test.pdf', (err, _resp) => {
-    if (err) return console.log(err);
-    console.log(_resp);
-    resp.sendStatus(200);
+  const json_data = JSON.stringify(data);
+
+  const browser = await puppeteer.launch({
+    headless: true,
   })
 
-  // console.log(html);
+
+  const page = await browser.newPage()
   
+  await page.setViewport({ width: 296, height: 296 })
+
+  const html = fs.readFileSync(__dirname + '/html/receipt.html', 'utf-8').replace('#jsondata', json_data);
+  
+  // await page.goto(
+  //   `data:text/html,${html}`,
+  // );
+  await page.setContent(html, {
+    waitUntil: 'networkidle0'
+  })
+
+
+  // await page.goto('data:text/html,' + await page.content());
+
+  const height = await page.evaluate(() => {
+    return document.documentElement.offsetHeight
+  })
+
+
+  const heightmm = Math.ceil((height + 30) * 0.2646);
+
+  // or a .pdf file
+  await page.pdf({
+    pageRanges: '1',
+    width: '80mm',
+    height: `${heightmm}mm`,
+    margin: 0,
+    path: `${__dirname}/pdf/receipt.pdf`
+  })
+
+  // close the browser
+  await browser.close();
+
+  resp.sendStatus(200);
+
+
+  // console.log(html);
+
 })
 
 app.post('/', (req, resp) => {
