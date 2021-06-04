@@ -5,7 +5,7 @@
   <meta charset="UTF-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link href="https://unpkg.com/tailwindcss@^2/dist/tailwind.min.css" rel="stylesheet">
+  <link href="/css/app.css" rel="stylesheet">
   <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/@splidejs/splide@latest/dist/css/splide.min.css">
   <title>mycounter</title>
 </head>
@@ -13,7 +13,10 @@
 <body>
 
   <div id="app">
-    <div class="bg-white h-screen flex flex-col">
+    <div class="bg-white h-screen flex flex-col max-w-screen-sm m-auto">
+      <div class="flex items-center justify-between px-4 py-2 border-b border-black font-bold text-secondary text-2xl  tracking-widest">
+        <h1 >累積消費滿500元<br>即可成為VIP永久享有95折優惠</h1>
+      </div>
       <div class="flex-1">
         <div class="flex px-5 py-3 border-b border-black">
           <div class="flex-1">Description</div>
@@ -71,12 +74,14 @@
         </div>
       </div>
 
-      <div class="bg-gray-500">
+      <div class="bg-gray-500 ">
         <div class="splide h-full">
           <div class="splide__track">
-            <ul class="splide__list">
+            <ul class="splide__list ">
               <li class="splide__slide bg-desert-storm" v-for="img in imgs" :key="img">
-                <img class="w-full h-full object-cover md:object-contain" :src="img" />
+                <div class="aspect-w-18 aspect-h-5">
+                  <img class="w-full h-full  object-cover md:object-contain" :src="img" />
+                </div>
               </li>
             </ul>
           </div>
@@ -121,7 +126,7 @@
           arrows: false,
           interval: 5000,
           type: "loop",
-          height: "320px",
+          height: "auto",
         }).mount();
       },
 
